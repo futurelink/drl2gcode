@@ -4,6 +4,71 @@ GCodeWriter::GCodeWriter(GCodeConfig *config) {
     this->config = config;
 }
 
-void GCodeWriter::write(std::string file_name) {
+bool GCodeWriter::write(DRLFile *drl, std::string file_name) {
+    this->file = fopen(file_name.data(), "w");
+    if (!this->file) return false;
+
+    write_program_header(drl);
+
+    for (auto i = 0; i < drl->blocks_count(); i++) {
+	auto block = drl->block(i);
+	write_block_header(block);
+
+	write_block_footer(block);
+    }
+
+    write_program_footer(drl);
+}
+
+void GCodeWriter::write_program_header(DRLFile *drl) {
+    fputs(config->init_line.data(), this->file);
+    if (drl->info.measure == INCH) {
+        fputs("G20", this->file);
+    } else {
+        fputs("G21", this->file);
+    }
+    fputs("\n", this->file);
+
+    // Go to safe Z on G0
+    std::stringstream go_safe_z_cmd;
+    go_safe_z_cmd << "G0 Z" << std::to_string(config->safe_z) << " F" << std::to_string(config->drill_up_feed)  << "\n";
+    fputs(go_safe_z_cmd.str().data(), this->file);
+}
+
+void GCodeWriter::write_block_header(DRLBlock *block) {
+    // Tool set
+    std::stringstream tool_set;
+    tool_set << "T" << std::to_string(block->tool_number()) << "M6\n";
+    fputs(tool_set.str().data(), this->file);
+
+    // Points
+    for (auto i = 0; i < block->points_count(); i++) {
+	DRLPoint p = block->point(i);
+	write_move(p);
+    }
+}
+
+void GCodeWriter::write_move(DRLPoint point) {
+    // Move to position
+    std::stringstream move_cmd;
+    move_cmd << "G0 X" << std::to_string(point.x)
+	<< " Y" << std::to_string(point.y)
+	<< " F" << std::to_string((int)config->move_feed)
+	<< "\n";
+    fputs(move_cmd.str().data(), this->file);
+
+    // Drill down and raise up
+    std::stringstream drill_down_cmd;
+    drill_down_cmd << "G1 Z" << std::to_string(config->drill_down_z) << " F" << std::to_string(config->drill_down_feed)  << "\n"
+	<< "Z" << std::to_string(config->safe_z) << " F" << std::to_string(config->drill_up_feed)  << "\n";
+    fputs(drill_down_cmd.str().data(), this->file);
+}
+
+void GCodeWriter::write_block_footer(DRLBlock *block) {
 
 }
+
+void GCodeWriter::write_program_footer(DRLFile *drl) {
+
+}
+

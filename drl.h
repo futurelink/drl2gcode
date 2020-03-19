@@ -58,16 +58,20 @@ public:
 
     ~DRLBlock() {}
 
+    unsigned int tool_number() { return tool->number; }
+
     void add_point(float x, float y) {
 	DRLPoint point;
 	point.x = x;
 	point.y = y;
 	points.push_back(point);
     }
+
+    size_t points_count() { return points.size(); }
+    DRLPoint point(size_t num) { return points.at(num); }
 };
 
 class DRLFile {
-    DRLInfo info;
     std::vector<DRLBlock *> blocks;
     DRLBlock *current_block;
 
@@ -79,10 +83,15 @@ class DRLFile {
     std::regex *regex_point;
 
 public:
+    DRLInfo info;
+
     DRLFile(std::string name);
 
     bool open();
     void parse();
+
+    size_t blocks_count() { return blocks.size(); }
+    DRLBlock *block(size_t num) { return blocks.at(num); }
 
     void error(const char *msg) { printf("%s\n", msg); }
     void log(const char *msg) { printf("%s\n", msg); }
