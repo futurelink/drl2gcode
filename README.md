@@ -4,7 +4,7 @@ Minimalistic Excellon DRL to GCode converter
 This tool is used to convert PCB drilling file to G-Code to execute it on CNC milling
 machines.
 
-I tried to write a minimalistic G-Code which could be undelstood by almost any CNC machine,
+I tried to write a minimalistic G-Code which could be understood by almost any CNC machine,
 i've tested it with LinuxCNC and MACH3.
 
 Usage
