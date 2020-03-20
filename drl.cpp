@@ -6,7 +6,7 @@ DRLFile::DRLFile(std::string name) {
     this->name = name;
     regex_tool_def = new std::regex("T(\\d+)(C(\\d+.\\d+))?\\n?");
     regex_measure = new std::regex("(METRIC|INCH),(\\d+)\\.(\\d+)\\n?");
-    regex_point = new std::regex("[Xx][\\+-]?(\\d+)[Yy][\\+-]?(\\d+)\\n?");
+    regex_point = new std::regex("[Xx]([\\+-]?\\d+)[Yy]([\\+-]?\\d+)\\n?");
 }
 
 /**
@@ -108,11 +108,12 @@ void DRLFile::parse() {
  */
 bool DRLFile::parse_point_coord(string str, float *value) {
     string decimal, fraction;
-    if (str.length() != (info.decimal_count + info.fraction_count))
+    bool has_sign = ((str.at(0) == '+') || (str.at(0) == '-'));
+    if (str.length() != (info.decimal_count + info.fraction_count + (has_sign ? 1 : 0)))	// +1 for sign place
 	return false;
 
-    decimal = str.substr(0, info.decimal_count);
-    fraction = str.substr(info.decimal_count, info.fraction_count);
+    decimal = str.substr(0, info.decimal_count + (has_sign ? 1 : 0));
+    fraction = str.substr(info.decimal_count + (has_sign ? 1 : 0), info.fraction_count);
     *value = atoi(decimal.data()) + atoi(fraction.data()) / pow(10, info.fraction_count);
 
     return true;

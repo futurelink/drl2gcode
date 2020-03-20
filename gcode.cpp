@@ -79,6 +79,11 @@ void GCodeWriter::write_block_footer(DRLBlock *block) {
 }
 
 void GCodeWriter::write_program_footer(DRLFile *drl) {
-
+    std::stringstream finish_cmd;
+    finish_cmd
+	<< config->spindle_off_cmd << "\n" // Turn off spindle
+	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed) << "\n"  // Go to tool change Z
+	<< "G0 X0 Y0\n"
+	<< "\n";
+    fputs(finish_cmd.str().data(), this->file);
 }
-
