@@ -1,4 +1,4 @@
-minimalistic Excellon DRL to GCode converter
+Minimalistic Excellon DRL to GCode converter
 ============================================
 
 This tool is used to convert PCB drilling file to G-Code to execute it on CNC milling
