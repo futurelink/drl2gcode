@@ -2,16 +2,19 @@
 #include <regex>
 
 bool GCodeConfig::load(std::string file_name) {
-    char buf[1024];
+    std::FILE *fd = fopen(file_name.data(), "r");
+    if (!fd) {
+	return false;
+    }
 
+    char buf[1024];
     std::regex section_regex("\\[(.*?)\\]\n?");
     std::regex param_regex("(\\w+) *= *(.*) *\n?");
     std::cmatch match;
 
-    std::FILE *fd = fopen(file_name.data(), "r");
     while(fgets(buf, 1024, fd)) {
 	if (regex_match(buf, match, section_regex)) {
-	    printf(match[1].str().data());
+	    // Sections are not needed for now
 	} else if (regex_match(buf, match, param_regex)) {
 	    std::string name = match[1].str();
 	    std::string value = match[2].str();
@@ -42,5 +45,5 @@ bool GCodeConfig::load(std::string file_name) {
     }
     fclose(fd);
 
-    return false;
+    return true;
 }

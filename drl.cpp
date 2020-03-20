@@ -1,6 +1,6 @@
 #include "drl.h"
 
-using namespace std;
+/* DRLFile */
 
 DRLFile::DRLFile(std::string name) {
     this->name = name;
@@ -48,7 +48,7 @@ bool DRLFile::open() {
 void DRLFile::parse() {
     char buffer[BUFFER_LEN];
     char log_str[255];
-    cmatch match;
+    std::cmatch match;
     bool header_section = true;
     while (fgets(buffer, BUFFER_LEN, this->fd)) {
 	if (regex_match(buffer, match, *regex_tool_def)) {
@@ -72,7 +72,7 @@ void DRLFile::parse() {
 	    }
 	    log(log_str);
 	} else if (regex_match(buffer, match, *regex_measure)) {
-	    string measure = match[1].str();
+	    std::string measure = match[1].str();
 	    if (measure.compare("METRIC") == 0) {
 		info.measure = METRIC;
 	    } else if (measure.compare("INCH") == 0) {
@@ -106,15 +106,59 @@ void DRLFile::parse() {
  * Parse coordinate with specified decimal and fraction places
  * read from header of DRL file.
  */
-bool DRLFile::parse_point_coord(string str, float *value) {
-    string decimal, fraction;
+bool DRLFile::parse_point_coord(std::string str, float *value) {
+
     bool has_sign = ((str.at(0) == '+') || (str.at(0) == '-'));
     if (str.length() != (info.decimal_count + info.fraction_count + (has_sign ? 1 : 0)))	// +1 for sign place
 	return false;
 
-    decimal = str.substr(0, info.decimal_count + (has_sign ? 1 : 0));
-    fraction = str.substr(info.decimal_count + (has_sign ? 1 : 0), info.fraction_count);
+    std::string decimal = str.substr(0, info.decimal_count + (has_sign ? 1 : 0));
+    std::string fraction = str.substr(info.decimal_count + (has_sign ? 1 : 0), info.fraction_count);
     *value = atoi(decimal.data()) + atoi(fraction.data()) / pow(10, info.fraction_count);
 
     return true;
+}
+
+size_t DRLFile::blocks_count() { return blocks.size(); }
+DRLBlock *DRLFile::block(size_t num) { return blocks.at(num); }
+
+void DRLFile::error(const char *msg) {
+    printf("%s\n", msg);
+}
+
+void DRLFile::log(const char *msg) {
+#ifdef DEBUG
+    printf("%s\n", msg);
+#endif
+}
+
+/* DRLBlock */
+
+DRLBlock::DRLBlock(DRLTool *tool) {
+    this->tool = tool;
+}
+
+unsigned int DRLBlock::tool_number() { return tool->number; }
+
+void DRLBlock::add_point(float x, float y) {
+    DRLPoint point;
+    point.x = x;
+    point.y = y;
+    points.push_back(point);
+}
+
+size_t DRLBlock::points_count() { return points.size(); }
+DRLPoint DRLBlock::point(size_t num) { return points.at(num); }
+
+/* DRLInfo */
+
+DRLTool *DRLInfo::get_tool(unsigned int tool_number) {
+    for(auto const& tool: tools) {
+        if (tool->number == tool_number) return tool;
+    }
+    return nullptr;
+}
+
+void DRLInfo::add_tool(DRLTool *tool) {
+    tools.push_back(tool);
 }

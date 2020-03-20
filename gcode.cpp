@@ -14,6 +14,12 @@ bool GCodeWriter::write(DRLFile *drl, std::string file_name) {
 	auto block = drl->block(i);
 	write_block_header(block);
 
+        // Drill points
+        for (auto j = 0; j < block->points_count(); j++) {
+	    DRLPoint p = block->point(j);
+	    write_move(p);
+        }
+
 	write_block_footer(block);
     }
 
@@ -34,7 +40,7 @@ void GCodeWriter::write_program_header(DRLFile *drl) {
     // Go to safe Z on G0
     std::stringstream prepare_cmd;
     prepare_cmd << "G0 Z" << std::to_string(config->safe_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n";
-//    prepare_cmd << config->spindle_on_cmd << "S" << config->spindle_speed << "\n";
+//    prepare_cmd << config->spindle_on_cmd << " S" << config->spindle_speed << "\n";
     fputs(prepare_cmd.str().data(), this->file);
 }
 
@@ -48,14 +54,9 @@ void GCodeWriter::write_block_header(DRLBlock *block) {
 	<< config->spindle_off_cmd << "\n"
 	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n" // Go to tool change Z
 	<< "T" << std::to_string(block->tool_number()) << "M6\n" // Tool set
-	<< config->spindle_on_cmd << "\n";
+	<< config->spindle_on_cmd << " S" << config->spindle_speed << "\n";
     fputs(tool_set.str().data(), this->file);
 
-    // Points
-    for (auto i = 0; i < block->points_count(); i++) {
-	DRLPoint p = block->point(i);
-	write_move(p);
-    }
 }
 
 void GCodeWriter::write_move(DRLPoint point) {

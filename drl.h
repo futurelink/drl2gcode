@@ -30,21 +30,9 @@ public:
     int decimal_count;
     int fraction_count;
 
-    DRLInfo() {}
-    ~DRLInfo() {
-	// Clear tool table
-    }
+    DRLTool *get_tool(unsigned int tool_number);
 
-    DRLTool *get_tool(unsigned int tool_number) {
-	for(auto const& tool: tools) {
-	    if (tool->number == tool_number) return tool;
-	}
-	return nullptr;
-    }
-
-    void add_tool(DRLTool *tool) {
-	tools.push_back(tool);
-    }
+    void add_tool(DRLTool *tool);
 };
 
 class DRLBlock {
@@ -52,23 +40,16 @@ class DRLBlock {
     std::vector<DRLPoint> points;
 
 public:
-    DRLBlock(DRLTool *tool) {
-	this->tool = tool;
-    }
+    DRLBlock(DRLTool *tool);
 
     ~DRLBlock() {}
 
-    unsigned int tool_number() { return tool->number; }
+    unsigned int tool_number();
 
-    void add_point(float x, float y) {
-	DRLPoint point;
-	point.x = x;
-	point.y = y;
-	points.push_back(point);
-    }
+    void add_point(float x, float y);
 
-    size_t points_count() { return points.size(); }
-    DRLPoint point(size_t num) { return points.at(num); }
+    size_t points_count();
+    DRLPoint point(size_t num);
 };
 
 class DRLFile {
@@ -90,11 +71,11 @@ public:
     bool open();
     void parse();
 
-    size_t blocks_count() { return blocks.size(); }
-    DRLBlock *block(size_t num) { return blocks.at(num); }
+    size_t blocks_count();
+    DRLBlock *block(size_t num);
 
-    void error(const char *msg) { printf("%s\n", msg); }
-    void log(const char *msg) { printf("%s\n", msg); }
+    void error(const char *msg);
+    void log(const char *msg);
 
 private:
     void add_tool(unsigned int tool_number, float tool_dia);
