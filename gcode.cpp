@@ -18,6 +18,8 @@ bool GCodeWriter::write(DRLFile *drl, std::string file_name) {
     }
 
     write_program_footer(drl);
+
+    return true;
 }
 
 void GCodeWriter::write_program_header(DRLFile *drl) {
@@ -30,15 +32,23 @@ void GCodeWriter::write_program_header(DRLFile *drl) {
     fputs("\n", this->file);
 
     // Go to safe Z on G0
-    std::stringstream go_safe_z_cmd;
-    go_safe_z_cmd << "G0 Z" << std::to_string(config->safe_z) << " F" << std::to_string(config->drill_up_feed)  << "\n";
-    fputs(go_safe_z_cmd.str().data(), this->file);
+    std::stringstream prepare_cmd;
+    prepare_cmd << "G0 Z" << std::to_string(config->safe_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n";
+//    prepare_cmd << config->spindle_on_cmd << "S" << config->spindle_speed << "\n";
+    fputs(prepare_cmd.str().data(), this->file);
 }
 
 void GCodeWriter::write_block_header(DRLBlock *block) {
-    // Tool set
+    // Setting a tool
     std::stringstream tool_set;
-    tool_set << "T" << std::to_string(block->tool_number()) << "M6\n";
+    tool_set
+	<< "( --------------------- )\n"
+	<< "( Drilling with tool #" << block->tool_number() << " )\n"
+	<< "( --------------------- )\n"
+	<< config->spindle_off_cmd << "\n"
+	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n" // Go to tool change Z
+	<< "T" << std::to_string(block->tool_number()) << "M6\n" // Tool set
+	<< config->spindle_on_cmd << "\n";
     fputs(tool_set.str().data(), this->file);
 
     // Points
@@ -59,8 +69,8 @@ void GCodeWriter::write_move(DRLPoint point) {
 
     // Drill down and raise up
     std::stringstream drill_down_cmd;
-    drill_down_cmd << "G1 Z" << std::to_string(config->drill_down_z) << " F" << std::to_string(config->drill_down_feed)  << "\n"
-	<< "Z" << std::to_string(config->safe_z) << " F" << std::to_string(config->drill_up_feed)  << "\n";
+    drill_down_cmd << "G1 Z" << std::to_string(config->drill_down_z) << " F" << std::to_string((int)config->drill_down_feed)  << "\n"
+	<< "Z" << std::to_string(config->safe_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n";
     fputs(drill_down_cmd.str().data(), this->file);
 }
 
