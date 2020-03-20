@@ -45,7 +45,7 @@ bool DRLFile::open() {
 /**
  * Parse a DRL file
  */
-void DRLFile::parse() {
+bool DRLFile::parse() {
     char buffer[BUFFER_LEN];
     char log_str[255];
     std::cmatch match;
@@ -67,6 +67,7 @@ void DRLFile::parse() {
 			sprintf(log_str, "began block with tool number %d", tool_number);
 		    } else {
 			error("unknown tool");
+			return false;
 		    }
 		}
 	    }
@@ -91,6 +92,7 @@ void DRLFile::parse() {
 		log(log_str);
 	    } else {
 		error("invalid point value");
+		return false;
 	    }
 	} else if (buffer[0] == '%') {
 	    log("data section began");
@@ -100,6 +102,8 @@ void DRLFile::parse() {
 	    log(log_str);
 	}
     }
+
+    return true;
 }
 
 /**

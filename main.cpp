@@ -14,7 +14,10 @@ int main(int argc, char *argv[]) {
 	drl_file->error("File open error!");
     }
 
-    drl_file->parse();
+    if (!drl_file->parse()) {
+	drl_file->error("DRL file parse error!");
+	return -1;
+    }
 
     /* Create config and write G-code */
     GCodeConfig *config = new GCodeConfig();

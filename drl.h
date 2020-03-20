@@ -69,7 +69,7 @@ public:
     DRLFile(std::string name);
 
     bool open();
-    void parse();
+    bool parse();
 
     size_t blocks_count();
     DRLBlock *block(size_t num);
