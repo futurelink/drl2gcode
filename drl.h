@@ -45,6 +45,7 @@ public:
     ~DRLBlock() {}
 
     unsigned int tool_number();
+    DRLTool *get_tool();
 
     void add_point(float x, float y);
 

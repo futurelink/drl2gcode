@@ -143,6 +143,7 @@ DRLBlock::DRLBlock(DRLTool *tool) {
 }
 
 unsigned int DRLBlock::tool_number() { return tool->number; }
+DRLTool *DRLBlock::get_tool() { return tool; }
 
 void DRLBlock::add_point(float x, float y) {
     DRLPoint point;
@@ -162,6 +163,7 @@ DRLTool *DRLInfo::get_tool(unsigned int tool_number) {
     }
     return nullptr;
 }
+
 
 void DRLInfo::add_tool(DRLTool *tool) {
     tools.push_back(tool);

@@ -8,8 +8,8 @@ bool GCodeConfig::load(std::string file_name) {
     }
 
     char buf[1024];
-    std::regex section_regex("\\[(.*?)\\]\n?");
-    std::regex param_regex("(\\w+) *= *(.*) *\n?");
+    std::regex section_regex("\\[(.*?)\\]\r\n?");
+    std::regex param_regex("(\\w+) *= *(.*) *\r?\n?");
     std::cmatch match;
 
     while(fgets(buf, 1024, fd)) {
