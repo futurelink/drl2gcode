@@ -30,6 +30,7 @@ bool GCodeWriter::write(DRLFile *drl, std::string file_name) {
 
 void GCodeWriter::write_program_header(DRLFile *drl) {
     fputs(config->init_line.data(), this->file);
+    fputc('\n', this->file);
     if (drl->info.measure == INCH) {
         fputs("G20", this->file);
     } else {
@@ -48,9 +49,9 @@ void GCodeWriter::write_block_header(DRLBlock *block) {
     // Setting a tool
     std::stringstream tool_set;
     tool_set
-	<< "( --------------------- )\n"
-	<< "( Drilling with tool #" << block->tool_number() << " )\n"
-	<< "( --------------------- )\n"
+	<< "( ----------------------------- )\n"
+	<< "( Drilling with tool #" << block->tool_number() << ": " << block->get_tool()->diameter  << " )\n"
+	<< "( ----------------------------- )\n"
 	<< config->spindle_off_cmd << "\n"
 	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n" // Go to tool change Z
 	<< "T" << std::to_string(block->tool_number()) << "M6\n" // Tool set
