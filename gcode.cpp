@@ -54,7 +54,8 @@ void GCodeWriter::write_block_header(DRLBlock *block) {
 	<< config->spindle_off_cmd << "\n"
 	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed)  << "\n" // Go to tool change Z
 	<< "T" << std::to_string(block->tool_number()) << "M6\n" // Tool set
-	<< config->spindle_on_cmd << " S" << config->spindle_speed << "\n";
+	<< config->spindle_on_cmd << " S" << config->spindle_speed << "\n"
+	<< "G0 Z" << std::to_string(config->safe_z) << "\n";
     fputs(tool_set.str().data(), this->file);
 
 }
@@ -85,6 +86,7 @@ void GCodeWriter::write_program_footer(DRLFile *drl) {
 	<< config->spindle_off_cmd << "\n" // Turn off spindle
 	<< "G0 Z" << std::to_string(config->tool_change_z) << " F" << std::to_string((int)config->drill_up_feed) << "\n"  // Go to tool change Z
 	<< "G0 X0 Y0\n"
+	<< "M30"
 	<< "\n";
     fputs(finish_cmd.str().data(), this->file);
 }

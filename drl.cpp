@@ -5,8 +5,8 @@
 DRLFile::DRLFile(std::string name) {
     this->name = name;
     regex_tool_def = new std::regex("T(\\d+)(C(\\d+.\\d+))?\\n?");
-    regex_measure = new std::regex("(METRIC|INCH),(\\d+)\\.(\\d+)\\n?");
-    regex_point = new std::regex("[Xx]([\\+-]?\\d+)[Yy]([\\+-]?\\d+)\\n?");
+    regex_measure = new std::regex("(METRIC|INCH)[,(\\d+)\\.(\\d+)\\n]?");
+    regex_point = new std::regex("[Xx]([\\+-]?\\d+\\.?\\d*)[Yy]([\\+-]?\\d+\\.?\\d*)\\n?");
 }
 
 /**
@@ -79,10 +79,16 @@ bool DRLFile::parse() {
 	    } else if (measure.compare("INCH") == 0) {
 		info.measure = INCH;
 	    }
-	    info.decimal_count = match[2].str().length();
-	    info.fraction_count = match[3].str().length();
+	    if (match.size() == 2) {
+		info.decimal_count = 0;
+		info.fraction_count = 0;
+		sprintf(log_str, "no decimals and fraction defined, using coords as is");
+	    } else {
+		info.decimal_count = match[2].str().length();
+		info.fraction_count = match[3].str().length();
 
-	    sprintf(log_str, "decimals %d, fraction %d", info.decimal_count, info.fraction_count);
+		sprintf(log_str, "decimals %d, fraction %d", info.decimal_count, info.fraction_count);
+	    }
 	    log(log_str);
 	} else if (regex_match(buffer, match, *regex_point)) {
 	    float x, y;
@@ -111,14 +117,16 @@ bool DRLFile::parse() {
  * read from header of DRL file.
  */
 bool DRLFile::parse_point_coord(std::string str, float *value) {
-
-    bool has_sign = ((str.at(0) == '+') || (str.at(0) == '-'));
-    if (str.length() != (info.decimal_count + info.fraction_count + (has_sign ? 1 : 0)))	// +1 for sign place
-	return false;
-
-    std::string decimal = str.substr(0, info.decimal_count + (has_sign ? 1 : 0));
-    std::string fraction = str.substr(info.decimal_count + (has_sign ? 1 : 0), info.fraction_count);
-    *value = atoi(decimal.data()) + atoi(fraction.data()) / pow(10, info.fraction_count);
+    if ((info.decimal_count > 0) && (info.fraction_count > 0)) {
+        bool has_sign = ((str.at(0) == '+') || (str.at(0) == '-'));
+        if (str.length() != (info.decimal_count + info.fraction_count + (has_sign ? 1 : 0)))	// +1 for sign place
+	    return false;
+        std::string decimal = str.substr(0, info.decimal_count + (has_sign ? 1 : 0));
+        std::string fraction = str.substr(info.decimal_count + (has_sign ? 1 : 0), info.fraction_count);
+        *value = atoi(decimal.data()) + atoi(fraction.data()) / pow(10, info.fraction_count);
+    } else {
+        *value = atof(str.data());
+    }
 
     return true;
 }
